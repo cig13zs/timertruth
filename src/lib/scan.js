@@ -20,6 +20,10 @@
   const TIMER = 1, COUNTER = 2, STOCK = 4, TODAY = 8;
   const LONG = 400;          // longer than this and an element is a container, not a claim
   const CONTEXT_MAX = 220;   // how much surrounding text may count as a timer's label
+  const MAY_UNITS = /\d\s*(?:d|h|m|s|days?|hours?|hrs?|min|sec)/i;
+  const MAY_COUNTER = /view|look|watch|brows|checking|cart|bought|purchas|order|sold/i;
+  const MAY_STOCK = /left|remain|stock|availab/i;
+  const MAY_TODAY = /today|tonight|midnight|last day/i;
   const MEDIA_ATTR = /\b(?:video|player|vjs|plyr|jwplayer|media-?controls?)\b/i;
 
   const isOurs = (el) => el.getAttribute && el.getAttribute('data-tt') !== null;
@@ -126,21 +130,23 @@
       const t = readText(el, memo);
       if (!t || !t.compact || t.compact.length > 160) return mask;
       const text = t.compact;
+      // Cheap gates first: on a big grid almost every element fails all of
+      // them, and the full parsers never run.
       if (/\d/.test(text)) {
-        if (!(mask & TIMER)) {
+        if (!(mask & TIMER) && (text.includes(':') || MAY_UNITS.test(text) || /^[\d\s]{6,}$/.test(text))) {
           const p = P.parseCountdown(text, t.spaced);
           if (p) { found.push({ el, kind: 'timer', text, parsed: p }); mask |= TIMER; }
         }
-        if (!(mask & COUNTER)) {
+        if (!(mask & COUNTER) && MAY_COUNTER.test(text)) {
           const c = P.parseCounter(text);
           if (c) { found.push({ el, kind: c.kind, text, parsed: c }); mask |= COUNTER; }
         }
-        if (!(mask & STOCK)) {
+        if (!(mask & STOCK) && MAY_STOCK.test(text)) {
           const s = P.parseStock(text);
           if (s) { found.push({ el, kind: 'stock', text, parsed: s }); mask |= STOCK; }
         }
       }
-      if (!(mask & TODAY) && P.claimsEndsToday(text)) {
+      if (!(mask & TODAY) && MAY_TODAY.test(text) && P.claimsEndsToday(text)) {
         found.push({ el, kind: 'today', text, parsed: {} });
         mask |= TODAY;
       }

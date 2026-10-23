@@ -29,7 +29,7 @@
   let index = { entries: [] };
   let demo = null;
   let ui = null;
-  let scanTimer = 0, lastScan = 0, saveTimer = 0, saves = 0;
+  let scanTimer = 0, lastScan = 0, scanCost = 0, saveTimer = 0, saves = 0;
 
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const rand = () => Math.random().toString(36).slice(2, 10);
@@ -65,8 +65,9 @@
   function scheduleScan(delay) {
     if (!enabled || !view) return;
     clearTimeout(scanTimer);
-    // Busy pages mutate constantly. Early on, keep up; later, slow down.
-    const gap = Date.now() - view.started < 15e3 ? 700 : 3000;
+    // Busy pages mutate constantly. Early on, keep up; later, slow down; and
+    // never spend more than about 5% of the time scanning a huge page.
+    const gap = Math.max(Date.now() - view.started < 15e3 ? 700 : 3000, scanCost * 20);
     const wait = delay ?? Math.max(250, gap - (Date.now() - lastScan));
     scanTimer = setTimeout(scanNow, wait);
   }
@@ -77,6 +78,7 @@
     view.scans++;
     let cands;
     try { cands = S.scan(document.body); } catch { return; }
+    scanCost = Date.now() - lastScan;
     for (const c of cands) {
       if (!visible(c.el)) continue;
       const it = view.items.get(c.key);
@@ -180,8 +182,8 @@
     index = got[IDX] || { entries: [] };
     const d = got.demo;
     demo = d && !d.done && d.page === v.key && Date.now() - d.updated < DEMO_STALE ? d : null;
+    ui.setQuiet(!!demo);
     if (demo) {
-      ui.setQuiet(true);
       ui.hud({ mode: 'progress', step: demo.step, total: demo.total, resets: demo.resets || 0, checking: true });
       demoStep(demo);
     }
