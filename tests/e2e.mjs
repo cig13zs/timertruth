@@ -26,7 +26,9 @@ export const HONEST_HTML = DEMO_HTML
   .replace('var left = Math.max(0, 600 - Math.floor((Date.now() - start) / 1000));',
     'var left = Math.max(0, Math.floor((Math.ceil((start + 60e3) / 14400e3) * 14400e3 - Date.now()) / 1000));')
   .replace('var VIEWERS = [23, 41, 17, 38, 12, 44, 29, 51, 8, 35];', 'var VIEWERS = [118, 121, 119, 124];')
-  .replace('var STOCK = [3, 7, 2, 5, 4, 6];', 'var STOCK = [9, 9, 8, 8];');
+  .replace('var STOCK = [3, 7, 2, 5, 4, 6];', 'var STOCK = [9, 9, 8, 8];')
+  .replace(/Nothing here is for sale\. The flash-sale countdown[\s\S]*?does not move\./,
+    'Nothing here is for sale. This copy has the tricks taken out: both countdowns run to fixed times and the counters only drift.');
 const PAGES = {
   '/timertruth/demo/': DEMO_HTML,
   '/timertruth/demo/honest': HONEST_HTML,

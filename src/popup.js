@@ -129,7 +129,7 @@ async function renderTotals() {
     el.append(d);
   };
   line([[t.timers, t.timers === 1 ? 'countdown checked' : 'countdowns checked'], [t.fake, 'fake'], [t.consistent, 'consistent']]);
-  line([[t.random, t.random === 1 ? 'made-up counter' : 'made-up counters'], [t.stock, 'stock resets'], [t.shops.size, t.shops.size === 1 ? 'shop' : 'shops']]);
+  line([[t.random, t.random === 1 ? 'made-up counter' : 'made-up counters'], [t.stock, t.stock === 1 ? 'stock reset' : 'stock resets'], [t.shops.size, t.shops.size === 1 ? 'shop' : 'shops']]);
 }
 
 // ---- Test this timer ----------------------------------------------------------------
