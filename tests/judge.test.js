@@ -262,4 +262,8 @@ test('demo verdict counts only the loads since the test started', () => {
   for (let i = 0; i < 4; i++) runLoad(real, realShop(T0 + HOUR, T0 + i * 3000, { phase: i * 230 }), T0 + i * 3000);
   assert.equal(J.demoVerdict(Object.values(real.rec.items), T0).headline, 'This timer looks real');
   assert.equal(J.demoVerdict([], T0).headline, 'No live countdown found here');
+  // Mid-test, after one reload: the reset is counted even though it is not a verdict yet.
+  const one = newState();
+  for (let i = 0; i < 2; i++) runLoad(one, fakeShop(T0 + i * 3000, i), T0 + i * 3000);
+  assert.equal(J.demoVerdict(Object.values(one.rec.items), T0).moves, 1);
 });

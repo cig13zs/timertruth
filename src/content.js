@@ -192,10 +192,21 @@
 
   // ---- Test this timer -------------------------------------------------------------
 
-  async function settled(v) {
+  // Ready to judge this load: scanned, nothing mid-reading, and every timer
+  // already seen during this test has its reading for this load (a slow
+  // first paint must not count as "no reset"). Gives up after 6 s.
+  async function settled(v, since) {
     const until = Date.now() + 6000;
+    const expect = Object.entries(v.rec.items)
+      .filter(([, it]) => it.kind === 'timer' && it.obs.some((o) => o.t >= since))
+      .map(([k]) => k);
     while (Date.now() < until && v === view) {
-      if (v.scans > 0 && v.pending === 0 && Date.now() - v.started > 1200) return true;
+      const have = expect.every((k) => {
+        const o = v.rec.items[k] && v.rec.items[k].obs;
+        const live = v.items.get(k);
+        return (o && o.length && o[o.length - 1].l === v.loadId) || (live && live.state === 'rejected');
+      });
+      if (have && v.scans > 0 && v.pending === 0 && Date.now() - v.started > 1200) return true;
       await sleep(100);
     }
     return v === view;
@@ -213,7 +224,7 @@
 
   async function demoStep(d) {
     const v = view;
-    if (!(await settled(v)) || demo !== d) return;
+    if (!(await settled(v, d.since)) || demo !== d) return;
     const now = J.demoVerdict(Object.values(v.rec.items), d.since);
     d.resets = now.moves || 0;
     d.timers = now.timers;

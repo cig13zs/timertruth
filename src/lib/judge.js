@@ -333,9 +333,9 @@
       if (it.kind === 'timer') {
         out.timers++;
         const j = judgeTimer(obs);
+        out.moves = Math.max(out.moves, j.moves);
         if (j.moves >= 2) {
           raise('fake');
-          out.moves = Math.max(out.moves, j.moves);
           bad.push(j.sameStart
             ? `${name} restarted on every reload: ${j.moves} resets in ${j.loads} loads, always from ${P.formatDuration(j.start)}.`
             : `${name} moved its deadline ${j.moves} times in ${j.loads} loads.`);
