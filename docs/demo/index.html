@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kahon Deals: demo shop for TimerTruth</title>
+<meta name="description" content="A pretend shop with a fake countdown, a made-up viewer count and fake low stock, for trying TimerTruth. Nothing here is for sale.">
+<style>
+  :root { --ink: #1b1f24; --muted: #66707b; --line: #e6e9ed; --brand: #0f766e; --hot: #e11d48; --bg: #f4f5f7; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { background: #fff; border-bottom: 1px solid var(--line); }
+  .bar { max-width: 1080px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 14px; }
+  .logo { display: flex; align-items: center; gap: 8px; font-weight: 850; font-size: 20px; letter-spacing: -.02em; color: var(--brand); }
+  .search { flex: 1; height: 38px; border-radius: 19px; background: var(--bg); border: 1px solid var(--line); display: flex; align-items: center; padding: 0 16px; color: #9aa3ad; font-size: 14px; }
+  .tag { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 3px 9px; }
+  main { max-width: 1080px; margin: 18px auto; padding: 0 20px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: 14px; display: grid; grid-template-columns: 420px 1fr; gap: 28px; padding: 22px; }
+  .pic { background: linear-gradient(160deg, #eef6f5, #dfe9f3); border-radius: 12px; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+  .pic svg { width: 78%; height: auto; }
+  .crumbs { color: var(--muted); font-size: 13px; }
+  h1 { margin: 4px 0 6px; font-size: 24px; line-height: 1.25; letter-spacing: -.01em; }
+  .rate { color: var(--muted); font-size: 14px; }
+  .rate b { color: #f59e0b; }
+  .flash { margin: 16px 0 0; border-radius: 12px; overflow: hidden; border: 1px solid #fecdd3; }
+  .flash-top { background: linear-gradient(90deg, #e11d48, #f97316); color: #fff; display: flex; align-items: center; justify-content: space-between; padding: 10px 16px; gap: 10px; }
+  .flash-name { font-weight: 900; letter-spacing: .04em; font-size: 17px; }
+  .ends { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; }
+  .clock { display: flex; align-items: center; gap: 4px; }
+  .clock b { background: #111; color: #fff; border-radius: 6px; min-width: 38px; text-align: center; padding: 4px 6px; font-size: 22px; font-variant-numeric: tabular-nums; }
+  .clock i { font-style: normal; font-weight: 900; font-size: 20px; }
+  .price { background: #fff5f6; padding: 12px 16px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .now { color: var(--hot); font-size: 34px; font-weight: 800; letter-spacing: -.02em; }
+  .was { color: var(--muted); text-decoration: line-through; }
+  .off { background: var(--hot); color: #fff; font-weight: 800; font-size: 12px; border-radius: 4px; padding: 2px 6px; }
+  .urgent { margin: 14px 0 0; display: grid; gap: 8px; }
+  .row { display: flex; align-items: center; gap: 10px; font-size: 15px; }
+  .row .dot { width: 9px; height: 9px; border-radius: 50%; background: #ef4444; box-shadow: 0 0 0 4px #fee2e2; flex: none; }
+  .row.stock { color: #b45309; font-weight: 700; }
+  .ship { margin-top: 14px; padding: 10px 14px; border: 1px dashed #99c9c4; border-radius: 10px; background: #f0faf9; display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: 14px; }
+  .ship .t { font-variant-numeric: tabular-nums; font-weight: 800; color: var(--brand); }
+  .buy { margin-top: 16px; display: flex; gap: 10px; }
+  .buy button { flex: 1; height: 48px; border-radius: 10px; font: 700 16px system-ui, sans-serif; cursor: pointer; }
+  .cart { background: #fff; border: 2px solid var(--brand); color: var(--brand); }
+  .now-btn { background: var(--brand); border: 2px solid var(--brand); color: #fff; }
+  .about { margin-top: 18px; background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px 22px; color: var(--muted); font-size: 14px; }
+  .about h2 { margin: 0 0 6px; font-size: 15px; color: var(--ink); }
+  .about code { background: var(--bg); padding: 1px 5px; border-radius: 4px; }
+  footer { text-align: center; color: var(--muted); font-size: 12px; margin: 22px 0 30px; }
+  @media (max-width: 760px) {
+    .bar { padding: 10px 14px; } .search { display: none; } .bar .tag { margin-left: auto; }
+    main { margin: 10px auto; padding: 0 12px; }
+    .card { grid-template-columns: 1fr; gap: 14px; padding: 14px; }
+    .pic { aspect-ratio: 16 / 9; } .pic svg { width: auto; height: 86%; }
+    h1 { font-size: 21px; }
+    .flash-top { flex-direction: column; align-items: flex-start; }
+    .clock b { font-size: 26px; min-width: 44px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="bar">
+    <div class="logo">
+      <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true"><path d="M4 10l12-6 12 6v13l-12 6-12-6z" fill="#0f766e"/><path d="M4 10l12 6 12-6M16 16v13" stroke="#fff" stroke-width="2" fill="none"/></svg>
+      Kahon Deals
+    </div>
+    <div class="search">Search earbuds, chargers, cases…</div>
+    <span class="tag">Demo shop</span>
+  </div>
+</header>
+
+<main>
+  <section class="card">
+    <div class="pic">
+      <svg viewBox="0 0 240 200" aria-label="Wireless earbuds in a charging case">
+        <ellipse cx="120" cy="178" rx="92" ry="10" fill="#000" opacity=".08"/>
+        <rect x="40" y="70" width="160" height="104" rx="46" fill="#fff" stroke="#d5dde5" stroke-width="2"/>
+        <path d="M40 112h160" stroke="#d5dde5" stroke-width="2"/>
+        <circle cx="120" cy="140" r="4" fill="#34d399"/>
+        <g transform="translate(66 22) rotate(-12)"><rect x="0" y="0" width="34" height="52" rx="17" fill="#fff" stroke="#cfd8e1" stroke-width="2"/><rect x="9" y="44" width="16" height="44" rx="8" fill="#fff" stroke="#cfd8e1" stroke-width="2"/><circle cx="17" cy="18" r="7" fill="#e5ebf1"/></g>
+        <g transform="translate(140 18) rotate(12)"><rect x="0" y="0" width="34" height="52" rx="17" fill="#fff" stroke="#cfd8e1" stroke-width="2"/><rect x="9" y="44" width="16" height="44" rx="8" fill="#fff" stroke="#cfd8e1" stroke-width="2"/><circle cx="17" cy="18" r="7" fill="#e5ebf1"/></g>
+      </svg>
+    </div>
+    <div>
+      <div class="crumbs">Audio › Earbuds</div>
+      <h1>Pulse Air Wireless Earbuds, Bluetooth 5.3, 40h battery</h1>
+      <div class="rate"><b>★ 4.8</b> · 2.1k ratings · 9.6k sold</div>
+
+      <div class="flash">
+        <div class="flash-top">
+          <span class="flash-name">FLASH SALE</span>
+          <span class="ends">Ends in
+            <span class="clock" id="fake-timer"><b>00</b><i>:</i><b>10</b><i>:</i><b>00</b></span>
+          </span>
+        </div>
+        <div class="price"><span class="now">₱499</span><span class="was">₱1,299</span><span class="off">-62%</span></div>
+      </div>
+
+      <div class="urgent">
+        <div class="row"><span class="dot"></span><span><b id="viewers">23</b> people are viewing this right now</span></div>
+        <div class="row stock" id="stock">Hurry! Only 3 left</div>
+      </div>
+
+      <div class="ship"><span>Free shipping voucher ends in</span><span class="t" id="real-timer">--:--:--</span></div>
+
+      <div class="buy"><button class="cart" type="button">Add to cart</button><button class="now-btn" type="button">Buy now</button></div>
+    </div>
+  </section>
+
+  <section class="about">
+    <h2>This is a demo page for TimerTruth</h2>
+    Nothing here is for sale. The flash-sale countdown starts again from 10:00 every time the page loads,
+    the viewer count and the stock count are picked from a list on each load, and the shipping voucher
+    counts down to a fixed time that does not move. Install TimerTruth, open its popup and press
+    <code>Test this timer</code>.
+  </section>
+  <footer>Kahon Deals is made up for this demo. <a href="https://github.com/cig13zs/timertruth">TimerTruth on GitHub</a></footer>
+</main>
+
+<script>
+  // Everything below is the kind of code TimerTruth exists to catch.
+  (function () {
+    var loads = 0;
+    try { loads = +(localStorage.getItem('kahon-loads') || 0); localStorage.setItem('kahon-loads', String(loads + 1)); } catch (e) {}
+    var VIEWERS = [23, 41, 17, 38, 12, 44, 29, 51, 8, 35];
+    var STOCK = [3, 7, 2, 5, 4, 6];
+    document.getElementById('viewers').textContent = VIEWERS[loads % VIEWERS.length];
+    document.getElementById('stock').textContent = 'Hurry! Only ' + STOCK[loads % STOCK.length] + ' left';
+
+    var p2 = function (n) { return (n < 10 ? '0' : '') + n; };
+
+    // The fake: ten minutes from whenever you opened the page.
+    var start = Date.now();
+    var fake = document.getElementById('fake-timer').getElementsByTagName('b');
+    function drawFake() {
+      var left = Math.max(0, 600 - Math.floor((Date.now() - start) / 1000));
+      fake[0].textContent = p2(Math.floor(left / 3600));
+      fake[1].textContent = p2(Math.floor(left / 60) % 60);
+      fake[2].textContent = p2(left % 60);
+    }
+    drawFake();
+    setInterval(drawFake, 1000);
+
+    // The honest one: a fixed deadline, the next 4-hour mark of the clock.
+    var BLOCK = 4 * 3600 * 1000;
+    var deadline = Math.ceil((Date.now() + 60000) / BLOCK) * BLOCK;
+    var real = document.getElementById('real-timer');
+    function drawReal() {
+      var left = Math.max(0, Math.floor((deadline - Date.now()) / 1000));
+      real.textContent = p2(Math.floor(left / 3600)) + ':' + p2(Math.floor(left / 60) % 60) + ':' + p2(left % 60);
+    }
+    drawReal();
+    setInterval(drawReal, 250);
+  })();
+</script>
+</body>
+</html>
