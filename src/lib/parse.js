@@ -123,7 +123,10 @@
     if (mmss.length > 1) return null;
 
     if (spaced && /^[\d\s]+$/.test(t)) {
-      const b = BOX_RE.exec(String(spaced).replace(/\s+/g, ' ').trim());
+      let sp = String(spaced).replace(/\s+/g, ' ').trim();
+      // One box per digit ("0 1 2 3 4 5"): pair them up.
+      if (/^(?:\d ){5}\d$|^(?:\d ){7}\d$/.test(sp)) sp = sp.replace(/ /g, '').replace(/(\d\d)(?=\d)/g, '$1 ');
+      const b = BOX_RE.exec(sp);
       if (b) {
         const d = b[1] ? +b[1] : 0, h = +b[2], mi = +b[3], s = +b[4];
         if (mi > 59 || s > 59 || (b[1] && h > 23)) return null;

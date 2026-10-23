@@ -63,3 +63,11 @@ test('ends-today claims and timers without any deadline words', () => {
   const classed = scan(parse('<body><span class="countdown">12:30:00</span></body>').body);
   assert.equal(classed.length, 1, 'a timer-like class is enough to watch it');
 });
+
+test('a timer drawn one digit per box is found as one timer', () => {
+  const digits = '000958'.split('').map((d) => `<span class="d">${d}</span>`).join('');
+  const cands = scan(parse(`<body><div class="x"><p>Lightning deal ends in</p><div class="y">${digits}</div></div></body>`).body);
+  assert.equal(cands.length, 1);
+  assert.equal(cands[0].parsed.seconds, 598);
+  assert.equal(cands[0].label, 'lightning deal ends in');
+});

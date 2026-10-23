@@ -41,6 +41,9 @@ test('countdowns: digit boxes with no separators need the spaced text', () => {
   assert.equal(secs('000958', '00 09 58'), 598);
   assert.equal(secs('01020958', '01 02 09 58'), 86400 + 2 * 3600 + 598);
   assert.equal(cd('Sale 000958', 'Sale 00 09 58'), null, 'only bare digits count as boxes');
+  assert.equal(secs('000958', '0 0 0 9 5 8'), 598, 'one box per digit');
+  assert.equal(secs('01020958', '0 1 0 2 0 9 5 8'), 86400 + 2 * 3600 + 598);
+  assert.equal(cd('12345', '1 2 3 4 5'), null);
 });
 
 test('countdowns: things that are not countdowns', () => {
