@@ -15,11 +15,21 @@ const EXT = path.join(root, 'dist', 'chrome');
 const SITE = 'https://cig13zs.github.io/timertruth';
 const DEMO = `${SITE}/demo/`;
 const TRICKY = `${SITE}/test/tricky`;
+const HONEST = `${SITE}/demo/honest`;
 const SHOTS = path.join(root, 'tests', 'screenshots');
 fs.mkdirSync(SHOTS, { recursive: true });
 
+const DEMO_HTML = fs.readFileSync(path.join(root, 'docs', 'demo', 'index.html'), 'utf8');
+// The same shop with the tricks taken out: the flash sale counts down to a fixed time and the
+// counters only drift. "Test this timer" must call this one real.
+export const HONEST_HTML = DEMO_HTML
+  .replace('var left = Math.max(0, 600 - Math.floor((Date.now() - start) / 1000));',
+    'var left = Math.max(0, Math.floor((Math.ceil((start + 60e3) / 14400e3) * 14400e3 - Date.now()) / 1000));')
+  .replace('var VIEWERS = [23, 41, 17, 38, 12, 44, 29, 51, 8, 35];', 'var VIEWERS = [118, 121, 119, 124];')
+  .replace('var STOCK = [3, 7, 2, 5, 4, 6];', 'var STOCK = [9, 9, 8, 8];');
 const PAGES = {
-  '/timertruth/demo/': fs.readFileSync(path.join(root, 'docs', 'demo', 'index.html'), 'utf8'),
+  '/timertruth/demo/': DEMO_HTML,
+  '/timertruth/demo/honest': HONEST_HTML,
   '/timertruth/test/tricky': fs.readFileSync(path.join(root, 'tests', 'fixtures', 'live-tricky.html'), 'utf8'),
 };
 
@@ -75,6 +85,9 @@ const main = process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(
 if (main) {
   const { context, page, ext } = await launch();
   page.on('pageerror', (e) => errors.push(`pageerror: ${e.message}`));
+  // Every request any page or the extension makes, other than the local pages served above.
+  const outside = [];
+  context.on('request', (r) => { if (!/^(https:\/\/cig13zs\.github\.io\/timertruth\/|chrome-extension:|data:)/.test(r.url())) outside.push(r.url()); });
   let loads = 0;
   page.on('load', () => loads++);
 
@@ -143,6 +156,21 @@ if (main) {
     assert.match(text, /It starts at 10:00 on every load\./);
   });
 
+  await step('the same shop with a real deadline: "This timer looks real", no FAKE anywhere', async () => {
+    await page.goto(HONEST);
+    await page.waitForTimeout(1500);
+    loads = 0;
+    await popup.goto(`chrome-extension://${ext()}/popup.html?url=${encodeURIComponent(HONEST)}`);
+    await popup.locator('#test:not([disabled])').click();
+    await page.bringToFront();
+    const verdict = layer(page).locator('.hud.v-ok .big');
+    await verdict.waitFor({ timeout: 30000 });
+    assert.equal(await verdict.textContent(), 'This timer looks real');
+    assert.equal(loads, 3);
+    const texts = await badgeTexts(page);
+    assert.deepEqual(texts.sort(), ['✓ consistent · 4 loads', '✓ consistent · 4 loads'], texts.join(' | '));
+  });
+
   await step('countdowns that restart by design are never stamped (delivery, OTP, video, clock, printed date)', async () => {
     await page.goto(TRICKY);
     for (let i = 0; i < 3; i++) {
@@ -184,6 +212,7 @@ if (main) {
   await step('nothing in storage but readings, settings and the test state; no network requests from the extension', async () => {
     const keys = await popup.evaluate(() => chrome.storage.local.get(null).then((s) => Object.keys(s)));
     for (const k of keys) assert.match(k, /^(p:|h:|off:|demo$|sites$)/, k);
+    assert.deepEqual(outside, [], 'requests outside the local test pages');
   });
 
   await context.close();

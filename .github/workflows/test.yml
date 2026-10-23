@@ -12,3 +12,14 @@ jobs:
           node-version: 24
       - run: node --test tests/
       - run: node build.mjs
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: node tests/e2e.mjs
