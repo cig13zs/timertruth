@@ -158,21 +158,31 @@
 
   // ---- storage ---------------------------------------------------------------------
 
+  let unsaved = null;
   function save() {
     clearTimeout(saveTimer);
-    const v = view;
-    saveTimer = setTimeout(async () => {
-      try {
-        await X.set({ [v.key]: v.rec, [IDX]: index });
-        if (++saves % 25 === 1) {
-          const drop = H.prunePlan(await X.all());
-          if (drop.length) await X.remove(drop);
-        }
-      } catch { /* storage full or context gone: readings for this load are lost, nothing else */ }
-    }, 300);
+    unsaved = view;
+    saveTimer = setTimeout(flush, 300);
+  }
+
+  // Writes now. Called before the test reloads the page and when the page is
+  // hidden, so a quick reload cannot lose the reading it is meant to compare.
+  async function flush() {
+    clearTimeout(saveTimer);
+    const v = unsaved;
+    unsaved = null;
+    if (!v) return;
+    try {
+      await X.set({ [v.key]: v.rec, [IDX]: index });
+      if (++saves % 25 === 1) {
+        const drop = H.prunePlan(await X.all());
+        if (drop.length) await X.remove(drop);
+      }
+    } catch { /* storage full or context gone: readings for this load are lost, nothing else */ }
   }
 
   async function openView(spa) {
+    flush();
     view = newView(spa);
     const v = view;
     if (ui) ui.clear();
@@ -236,6 +246,7 @@
       if (demo !== d) return;
       d.step++;
       d.updated = Date.now();
+      await flush();
       await X.set({ demo: d });
       location.reload();
       return;
@@ -303,6 +314,7 @@
       }
     }).observe(document.body, { childList: true, subtree: true, characterData: true });
     setInterval(checkUrl, 700);
+    addEventListener('pagehide', () => { flush(); });
     addEventListener('popstate', checkUrl);
     await setEnabled(!got[OFF]);
   }
