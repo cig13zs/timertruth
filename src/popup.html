@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>TimerTruth</title>
+<style>
+  :root { color-scheme: light dark; }
+  body {
+    width: 312px; margin: 0; padding: 14px 15px 12px;
+    font: 13px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #fff; color: #1d232a;
+  }
+  header { display: flex; align-items: center; gap: 9px; }
+  header img { width: 28px; height: 28px; }
+  h1 { margin: 0; font-size: 15px; letter-spacing: -.1px; }
+  .host { color: #5d6772; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; }
+  .grow { flex: 1; min-width: 0; }
+  .sw { position: relative; width: 38px; height: 22px; flex: none; }
+  .sw input { opacity: 0; width: 100%; height: 100%; margin: 0; cursor: pointer; }
+  .tr { position: absolute; inset: 0; border-radius: 11px; background: #c8d0d8; transition: background .15s; pointer-events: none; }
+  .tr::after { content: ""; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .15s; }
+  .sw input:checked + .tr { background: #1f9d55; }
+  .sw input:checked + .tr::after { transform: translateX(16px); }
+  .sw input:focus-visible + .tr { outline: 2px solid #2b6fd6; outline-offset: 2px; }
+
+  button {
+    width: 100%; padding: 7px 10px; border-radius: 7px; border: 1px solid #d3dae1;
+    background: #f7f9fb; color: #24303c; font: 600 12px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; cursor: pointer;
+  }
+  button:hover { background: #eef2f6; }
+  button:disabled { opacity: .5; cursor: default; }
+  #test { margin-top: 13px; padding: 10px; font-size: 14px; background: #d3221a; border-color: #b51c15; color: #fff; }
+  #test:hover { background: #bd1f17; }
+  .hint { margin: 6px 0 0; color: #5d6772; font-size: 11.5px; }
+  #status { margin-top: 9px; padding: 8px 10px; border-radius: 7px; background: #f3f5f7; font-size: 12.5px; }
+  #status:empty { display: none; }
+  #status b { display: block; font-size: 14px; }
+  #status.fake { background: #fdeaea; color: #8e1712; }
+  #status.ok { background: #e8f6ed; color: #17613a; }
+  #status.warn { background: #fff3d1; color: #6b4300; }
+  #status ul { margin: 4px 0 0; padding-left: 16px; }
+
+  h2 { margin: 14px 0 6px; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; color: #7c8590; }
+  #items { list-style: none; margin: 0; padding: 0; }
+  #items li { display: flex; align-items: center; gap: 8px; padding: 6px 0; border-top: 1px solid #eef1f4; }
+  #items li:first-child { border-top: 0; }
+  .what { flex: 1; min-width: 0; }
+  .what span { display: block; color: #5d6772; font-size: 11.5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chip { flex: none; padding: 1px 6px; border-radius: 4px; border: 1px solid; font-size: 11px; font-weight: 700; max-width: 128px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .c-fake { background: #d3221a; border-color: #b51c15; color: #fff; }
+  .c-warn { background: #fff3d1; border-color: #e9a915; color: #6b4300; }
+  .c-ok { background: #e8f6ed; border-color: #93cfa6; color: #17613a; }
+  .c-watch, .c-none { background: #f3f5f7; border-color: #dde2e7; color: #5b6570; font-weight: 600; }
+  .empty { color: #7c8590; font-size: 12px; }
+  #totals { font-size: 12px; color: #3d4752; }
+  #totals b { color: #1d232a; }
+  .row2 { display: flex; gap: 8px; margin-top: 12px; }
+  #msg { margin-top: 6px; font-size: 11px; color: #5d6772; min-height: 14px; }
+  #unlisted p { margin: 10px 0 0; font-size: 12.5px; }
+  #unlisted button { margin-top: 8px; }
+  #kofi { display: block; margin-top: 8px; text-align: center; font-size: 11.5px; font-weight: 600; color: #1f7a52; text-decoration: none; }
+  #kofi:hover { text-decoration: underline; }
+  .foot { margin-top: 8px; font-size: 11px; color: #7c8590; }
+  [hidden] { display: none !important; }
+
+  @media (prefers-color-scheme: dark) {
+    body { background: #171b20; color: #e6eaef; }
+    .host, .hint, .what span, #msg { color: #98a2ad; }
+    button { background: #222831; border-color: #39414b; color: #dfe6ed; }
+    button:hover { background: #2a323c; }
+    #status { background: #222831; }
+    #status.fake { background: #3a1a1a; color: #ffb3ad; }
+    #status.ok { background: #14331f; color: #8fe3b0; }
+    #status.warn { background: #3a2f12; color: #ffd98a; }
+    #items li { border-color: #2a3038; }
+    .c-warn { background: #3a2f12; border-color: #8a6a1c; color: #ffd98a; }
+    .c-ok { background: #14331f; border-color: #2f7a4d; color: #8fe3b0; }
+    .c-watch, .c-none { background: #2a3038; border-color: #3c444e; color: #cbd3dc; }
+    #totals { color: #c4ced8; } #totals b { color: #fff; }
+    #kofi { color: #6bd39b; } .foot, h2, .empty { color: #808a95; }
+  }
+</style>
+
+<header>
+  <img src="icons/icon48.png" alt="">
+  <div class="grow">
+    <h1>TimerTruth</h1>
+    <div class="host" id="host"></div>
+  </div>
+  <span class="sw" id="swWrap" hidden><input type="checkbox" id="on" aria-label="Run on this shop"><span class="tr"></span></span>
+</header>
+
+<section id="main" hidden>
+  <button id="test">Test this timer</button>
+  <p class="hint">Reloads this tab 3 times and checks whether the countdown starts over.</p>
+  <div id="status"></div>
+
+  <h2>On this page</h2>
+  <ul id="items"></ul>
+  <p class="empty" id="empty" hidden>Nothing seen on this page yet. Countdowns, "people viewing" counters and
+    "only N left" badges are listed here once they show up.</p>
+
+  <h2>All shops, on this device</h2>
+  <div id="totals"></div>
+
+  <div class="row2">
+    <button id="copy">Copy evidence</button>
+    <button id="forget">Forget this page</button>
+  </div>
+  <div id="msg"></div>
+</section>
+
+<section id="unlisted" hidden>
+  <p>TimerTruth does not run on <b id="uhost"></b> by itself.</p>
+  <button id="check">Check this page once</button>
+  <button id="allow">Watch this site and test its timer</button>
+  <p class="hint">Watching asks for access to this one site, so the readings can be compared after
+    each reload and on your next visit. You can switch it off here at any time.</p>
+  <div id="umsg" class="hint"></div>
+</section>
+
+<section id="blocked" hidden>
+  <p class="hint">Browsers do not let extensions read this page. Open a shop's product page and try again.</p>
+</section>
+
+<a id="kofi" href="https://ko-fi.com/jju1s" target="_blank" rel="noopener noreferrer">Free and open source. Buy me a coffee</a>
+<p class="foot">Everything is recorded on this device only. No account, no server, no analytics.</p>
+
+<script src="lib/parse.js"></script>
+<script src="lib/judge.js"></script>
+<script src="lib/history.js"></script>
+<script src="popup.js"></script>
+</html>
