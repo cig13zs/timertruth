@@ -1,0 +1,17 @@
+{
+  "name": "timertruth",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Catches fake sale timers, random viewer counts and fake low-stock badges on shopping sites. Everything stays on your device.",
+  "license": "MIT",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test tests/",
+    "build": "node build.mjs",
+    "e2e": "node tests/e2e.mjs",
+    "media": "node tests/media.mjs"
+  },
+  "devDependencies": {
+    "playwright": "1.63.0"
+  }
+}
