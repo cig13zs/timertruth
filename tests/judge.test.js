@@ -256,8 +256,8 @@ test('demo verdict counts only the loads since the test started', () => {
   const since = T0 + 2 * 3000;
   const d = J.demoVerdict(Object.values(st.rec.items), since);
   assert.equal(d.headline, 'FAKE: reset 3×');
-  assert.ok(d.lines[0].startsWith('The countdown restarted on every reload: 3 resets in 4 loads'), d.lines[0]);
-  assert.ok(d.lines.some((l) => l.startsWith('"viewing" jumped around')), d.lines.join('\n'));
+  assert.equal(d.lines[0], '"Flash sale ends in" restarted on every reload: 3 resets in 4 loads, always from 10:00.');
+  assert.ok(d.lines.includes('"People viewing" jumped around: 17 → 38 → 12 → 44.'), d.lines.join('\n'));
   const real = newState();
   for (let i = 0; i < 4; i++) runLoad(real, realShop(T0 + HOUR, T0 + i * 3000, { phase: i * 230 }), T0 + i * 3000);
   assert.equal(J.demoVerdict(Object.values(real.rec.items), T0).headline, 'This timer looks real');

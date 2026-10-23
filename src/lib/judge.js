@@ -319,44 +319,52 @@
   /* The one-line answer for the demo's verdict card, from the items on a page,
    * judged on the observations made since the test started.
    */
+  const QUOTE = { viewers: '"People viewing"', carts: '"In carts"', stock: '"Only N left"' };
+
   function demoVerdict(items, since) {
-    const out = { level: 'none', headline: '', lines: [], timers: 0 };
+    const out = { level: 'none', headline: '', lines: [], timers: 0, moves: 0 };
+    const bad = [], odd = [], good = [];
+    const rank = { none: 0, ok: 1, warn: 2, fake: 3 };
+    const raise = (level) => { if (rank[level] > rank[out.level]) out.level = level; };
     for (const it of items) {
       const obs = (it.obs || []).filter((x) => x.t >= since);
+      if (!obs.length) continue;
+      const name = it.label && it.label !== 'timer' ? `"${it.label[0].toUpperCase()}${it.label.slice(1)}"` : 'A countdown';
       if (it.kind === 'timer') {
-        if (!obs.length) continue;
         out.timers++;
         const j = judgeTimer(obs);
         if (j.moves >= 2) {
-          out.level = 'fake';
-          out.lines.unshift(j.sameStart
-            ? `The countdown restarted on every reload: ${j.moves} resets in ${j.loads} loads, always from ${P.formatDuration(j.start)}.`
-            : `The deadline moved ${j.moves} times in ${j.loads} loads.`);
-          out.moves = Math.max(out.moves || 0, j.moves);
+          raise('fake');
+          out.moves = Math.max(out.moves, j.moves);
+          bad.push(j.sameStart
+            ? `${name} restarted on every reload: ${j.moves} resets in ${j.loads} loads, always from ${P.formatDuration(j.start)}.`
+            : `${name} moved its deadline ${j.moves} times in ${j.loads} loads.`);
         } else if (j.moves === 1) {
-          if (out.level !== 'fake') out.level = 'warn';
-          out.lines.push('The deadline moved once. Run the test again to confirm.');
+          raise('warn');
+          odd.push(`${name} moved its deadline once. Run the test again to confirm.`);
         } else if (j.loads >= 2) {
-          if (out.level === 'none') out.level = 'ok';
-          out.lines.push(`A countdown held the same deadline across ${j.loads} loads.`);
+          raise('ok');
+          good.push(`${name} kept the same deadline across ${j.loads} loads.`);
         }
       } else if (['viewers', 'carts', 'bought'].includes(it.kind)) {
         const j = judgeCounter(obs);
         if (j.state === 'random') {
-          if (out.level === 'none' || out.level === 'ok') out.level = 'warn';
-          out.lines.push(`"${counterUnit(it)}" jumped around: ${j.values.join(' → ')}.`);
+          raise('warn');
+          const what = QUOTE[it.kind] || `"${it.label.replace(/^bought per /, 'Bought in the last ')}"`;
+          odd.push(`${what} jumped around: ${j.values.join(' → ')}.`);
         }
       } else if (it.kind === 'stock') {
         const j = judgeStock(obs);
         if (j.state === 'up') {
-          if (out.level === 'none' || out.level === 'ok') out.level = 'warn';
-          out.lines.push(`"Only N left" went back up: ${j.values.join(' → ')}.`);
+          raise('warn');
+          odd.push(`${QUOTE.stock} went back up: ${j.values.join(' → ')}.`);
         }
       }
     }
+    out.lines = [...bad, ...odd, ...good];
     out.headline = {
-      fake: `FAKE: reset ${out.moves || 0}×`,
-      warn: 'Something here is made up',
+      fake: `FAKE: reset ${out.moves}×`,
+      warn: 'Made-up numbers on this page',
       ok: 'This timer looks real',
       none: out.timers ? 'Not enough loads to tell' : 'No live countdown found here',
     }[out.level];
