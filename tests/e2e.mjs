@@ -107,7 +107,7 @@ if (main) {
 
   await step('popup lists what it found on the page', async () => {
     await popup.goto(POPUP);
-    await popup.locator('#items li').first().waitFor();
+    await popup.locator('#items li', { hasText: 'Countdown' }).first().waitFor();   // the timer's reading lands ~1 s after the counters'
     const rows = await popup.locator('#items li .what').allTextContents();
     assert.ok(rows.some((r) => r.startsWith('Countdown')), rows.join(' | '));
     assert.ok(rows.some((r) => r.startsWith('"People viewing"')), rows.join(' | '));
