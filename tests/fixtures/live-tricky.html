@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Fixture: countdowns that must not be stamped FAKE</title>
+<style>body{font:15px system-ui,sans-serif;margin:24px;max-width:720px} div,p{margin:10px 0}</style></head>
+<body>
+<h1>Steel Water Bottle, 32 oz</h1>
+
+<!-- Real: a fixed deadline, Amazon-style markup. Must end up "consistent". -->
+<div id="deal-timer"><span>Deal ends in </span><span id="deal">--:--:--</span></div>
+
+<!-- Restart on every load, but by design. All of these must be ignored. -->
+<p>FREE delivery tomorrow. Order within <span id="cut">--</span></p>
+<p>Resend code in <span id="otp">0:59</span></p>
+<div class="player"><video width="160" height="90"></video><span id="vid">-0:30</span></div>
+<p>Sale time now <span id="clock">--:--:--</span></p>
+<p>Mega sale ends 2026-11-11 23:59:59</p>
+
+<!-- Real-looking counters: small moves only. -->
+<p><b id="viewers">1203</b> people are viewing this</p>
+<p id="stock">Only 9 left in stock - order soon.</p>
+
+<script>
+  (function () {
+    var p2 = function (n) { return (n < 10 ? '0' : '') + n; };
+    var loads = 0;
+    try { loads = +(localStorage.getItem('tricky-loads') || 0); localStorage.setItem('tricky-loads', String(loads + 1)); } catch (e) {}
+    document.getElementById('viewers').textContent = [1203, 1207, 1199, 1204][loads % 4];
+    document.getElementById('stock').textContent = 'Only ' + [9, 9, 8, 8][loads % 4] + ' left in stock - order soon.';
+    var start = Date.now();
+    var BLOCK = 3 * 3600 * 1000;
+    var deadline = Math.ceil((Date.now() + 60000) / BLOCK) * BLOCK;
+    function hms(s) { return p2(Math.floor(s / 3600)) + ':' + p2(Math.floor(s / 60) % 60) + ':' + p2(s % 60); }
+    function draw() {
+      var since = Math.floor((Date.now() - start) / 1000);
+      document.getElementById('deal').textContent = hms(Math.max(0, Math.ceil((deadline - Date.now()) / 1000)));
+      var cut = 3 * 3600 + 12 * 60 - since;
+      document.getElementById('cut').textContent = Math.floor(cut / 3600) + ' hrs ' + (Math.floor(cut / 60) % 60) + ' mins ' + (cut % 60) + ' secs';
+      document.getElementById('otp').textContent = '0:' + p2(Math.max(0, 59 - since));
+      document.getElementById('vid').textContent = '-0:' + p2(Math.max(0, 30 - since));
+      var d = new Date();
+      document.getElementById('clock').textContent = p2(d.getHours()) + ':' + p2(d.getMinutes()) + ':' + p2(d.getSeconds());
+    }
+    draw();
+    setInterval(draw, 200);
+  })();
+</script>
+</body>
+</html>
