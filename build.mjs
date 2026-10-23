@@ -19,7 +19,9 @@ const targets = {
     // Firefox Add-ons caps names at 50 characters; the store title lives in the name on both stores.
     name: 'TimerTruth: fake sale timer detector',
     browser_specific_settings: {
-      gecko: { id: 'timertruth@jju1s', strict_min_version: '128.0', data_collection_permissions: { required: ['none'] } },
+      // 140 is the first desktop release (and ESR) that reads data_collection_permissions; Android got it in 142.
+      gecko: { id: 'timertruth@jju1s', strict_min_version: '140.0', data_collection_permissions: { required: ['none'] } },
+      gecko_android: { strict_min_version: '142.0' },
     },
   },
 };
