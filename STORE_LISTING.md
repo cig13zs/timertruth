@@ -189,7 +189,7 @@ Promo tile (Chrome small tile, Edge): `store/promo-440x280.png`. Icon: `src/icon
 - Language: English. Region: all.
 - Account: the same Chrome Web Store developer account as Per Piece. The 2026-10-23 research
   note says the account's extension slots are the constraint; if none is free, one has to be
-  freed first (it suggests Sift for AO3, which is Lorence's call).
+  freed first (it suggests Sift for AO3, which is the owner's call).
 
 ## Edge Add-ons specifics
 
